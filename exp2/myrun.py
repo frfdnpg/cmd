@@ -17,16 +17,17 @@ from sklearn.metrics import mean_absolute_error
 start_time = time.time()
 
 
-# pre-defined parameters
+# pre-defined parameters'
 frac=0.5
 beta=10000.
-char_set=[' ','1','2','3','4','5','6','7','8','9','-','#','(',')','[',']','+','=','B','Br','c','C','Cl','F','H','I','N','n','O','o','P','p','S','s','Si','Sn']
-data_uri='../data/np.csv'
+char_set=[' ','1','2','3','4','5','6','7','8','9','-','#','(',')','[',']','+','=','B','Br','c','C','Cl','F','H','I','N','n','O','o','P','p','S','s','Si','Sn',
+         '12','13','14','21','23','24','31','32','34','35','42','43','45','54','56']
+data_uri='../data/nppurg.csv'
 save_uri='./np_model.ckpt'
 
-ntrn=82452
+ntrn=80995
 frac_val=0.05
-ntst=2748
+ntst=2700
 
 
 # data preparation
@@ -43,7 +44,7 @@ tstXs=Xs[-ntst:]
 tstY=Y[-ntst:]
 
 
-for n in [50000,82452]:
+for n in [50000,80995]:
     ntrn = n
 
     X=X[:ntrn]
