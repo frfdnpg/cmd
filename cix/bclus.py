@@ -149,7 +149,7 @@ def taylor_butina_cluster(similarity_table):
             continue
 
         # this is a new cluster
-        clusters.append( (fp_idx, unassigned) )
+        clusters.append((fp_idx, unassigned))
         seen.update(unassigned)
 
     # Return the results:
