@@ -248,6 +248,12 @@ def novan(smidfq, smidft, th = 0.7):
     for query_id, query_hits in zip(arq.ids, results):
         if len(query_hits) == 0:
             new.append(query_id)
+
+    # Generate list of frameworks for query and target
+    fraq = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidfq.smiles]
+    fraq = list(np.unique(fraq))
+    frat = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidft.smiles]
+    fraq = list(np.unique(frat))
     
     end = time.time()
     eltime = end - start
