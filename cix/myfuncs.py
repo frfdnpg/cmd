@@ -12,6 +12,7 @@ import matplotlib
 import pylab
 import random
 from rdkit.Chem import Draw
+from rdkit.Chem.Scaffolds import MurckoScaffold as ms
 from rdkit.Chem.Draw import IPythonConsole
 
 
@@ -71,6 +72,29 @@ def taylor_butina_cluster(similarity_table):
 
 
 
+### Calculate distance matrix for hierarchical clustering
+def distance_matrix(arena):
+    n = len(arena)
+
+    # Start off a similarity matrix with 1.0s along the diagonal
+    similarities = np.identity(n, "d")
+
+    ## Compute the full similarity matrix.
+    # The implementation computes the upper-triangle then copies
+    # the upper-triangle into lower-triangle. It does not include
+    # terms for the diagonal.
+    results = search.threshold_tanimoto_search_symmetric(arena, threshold=0.0)
+
+    # Copy the results into the NumPy array.
+    for row_index, row in enumerate(results.iter_indices_and_scores()):
+        for target_index, target_score in row:
+            similarities[row_index, target_index] = target_score
+
+    # Return the distance matrix using the similarity matrix
+    return 1.0 - similarities
+
+
+
 ### Create a smis list from a smiles file (just smiles)
 def smif2smis(name):
     smidf = pd.read_csv(name, delim_whitespace = True, names = ['smiles'], header = None)
@@ -84,13 +108,14 @@ def corrsmis(smis):
     corr_smi_yn = [x != None for x in [Chem.MolFromSmiles(s) for s in smis]]
     ncorr = sum(corr_smi_yn)
     smis = [smi for i, smi in enumerate(smis) if corr_smi_yn[i] == True]
-    return ncorr, n, smis
+    wrongsmis = [smi for i, smi in enumerate(smis) if corr_smi_yn[i] == False]
+    return ncorr, n, smis, wrongsmis
 
 
 
 ### Create a dataframe of smiles, id from smiles list
 def smis2smidf(smis):
-    return pd.DataFrame({'smiles': smis, 'id': range(1, len(smis)+1)}, columns = ['smiles','id'])
+    return pd.DataFrame({'smiles': smis, 'id': ['s' + str(x) for x in range(1, len(smis)+1)]}, columns = ['smiles','id'])
 
 
 
@@ -148,7 +173,7 @@ def clusmidf(smidf, th = 0.8, method = 'butina'):
         similarity_table = search.threshold_tanimoto_search_symmetric(arena, threshold = th)
     
         # Cluster the data
-        clus_res = bclus.taylor_butina_cluster(similarity_table)
+        clus_res = taylor_butina_cluster(similarity_table)
         
         # Output
         out = []
@@ -199,7 +224,7 @@ def paintmols(smis, molsPerRow = 5, subImgSize=(150,150)):
 
 
 ### Diversity analysis
-def divan(smidf):
+def divan(smidf, summ = False):
     
     start = time.time()
     
@@ -223,7 +248,10 @@ def divan(smidf):
     eltime = end - start
     print('Diversity analysis time: ' + time.strftime("%H:%M:%S", time.gmtime(eltime)))
     
-    return ncl_bu, ncl_cl, nfra
+    if(summ):
+    	return ncl_bu, ncl_cl, nfra, nfrag
+    else:
+	return clr_bu, clr_cl, fras, frasg
 
 
 
@@ -243,20 +271,32 @@ def novan(smidfq, smidft, th = 0.7):
     # Find hits
     results = chemfp.search.threshold_tanimoto_search_arena(arq, art, threshold=th)
     
-    # Generate list with new guys and calculate its length
-    new = []
+    # Generate list with new guys (no neighbors in target arena) and calculate its length
+    news = []
     for query_id, query_hits in zip(arq.ids, results):
         if len(query_hits) == 0:
             new.append(query_id)
-
+    
+    
     # Generate list of frameworks for query and target
     fraq = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidfq.smiles]
     fraq = list(np.unique(fraq))
     frat = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidft.smiles]
-    fraq = list(np.unique(frat))
+    frat = list(np.unique(frat))
+    
+    newfrags = [f for f in fraq if f not in frat]
+    
+    # Generate list of generic frameworks for query and target
+    gfraq = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidfq.smiles]
+    gfraq = list(np.unique(gfraq))
+    gfrat = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidft.smiles]
+    gfrat = list(np.unique(gfrat))
+    
+    newgfrags = [f for f in gfraq if f not in gfrat]
+    
     
     end = time.time()
     eltime = end - start
     print('Novelty analysis time: ' + time.strftime("%H:%M:%S", time.gmtime(eltime)))
     
-    return new, len(new)
+    return new, len(new), fraq, newfrags, gfraq, newgfrags
