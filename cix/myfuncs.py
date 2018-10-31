@@ -155,7 +155,7 @@ def smidf2arena(smidf):
 
 
 ### Cluster from smiles df
-def clusmidf(smidf, th = 0.8, method = 'butina'):
+def clusmidf(smidf, th = 0.8, method = 'butina', arena = None):
     
     if method != 'butina' and method != 'cl':
         print('Please select butina or cl')
@@ -165,7 +165,8 @@ def clusmidf(smidf, th = 0.8, method = 'butina'):
     start = time.time()
     
     # Get the arena
-    arena = smidf2arena(smidf)
+    if arena is None:
+        arena = smidf2arena(smidf)
 
     # Do the clustering
     if method == 'butina':
@@ -177,11 +178,13 @@ def clusmidf(smidf, th = 0.8, method = 'butina'):
         
         # Output
         out = []
-        for i in range(len(clus_res.clusters)):
+        # We need to re-sort the clusters as the creation of them does not generate a monotonously decreasing list
+        cs_sorted = sorted([(len(c[1]), c[1], c[0]) for c in clus_res.clusters], reverse = True)
+        for i in range(len(cs_sorted)):
             cl = []
-            c = clus_res.clusters[i]
-            cl.append(arena.ids[c[0]])
-            cl.extend([arena.ids[x] for x in c[1]])
+            c = cs_sorted[i]
+            cl.append(arena.ids[c[2]]) # Retrieve the arenaid of the centroid and add to the cluster
+            cl.extend([arena.ids[x] for x in c[1]]) # Retrieve the arenaid of the neighbors and add to cluster
             out.append(cl)
         for i in range(len(clus_res.false_singletons)):
             cl = [arena.ids[clus_res.false_singletons[i]]]
@@ -224,17 +227,19 @@ def paintmols(smis, molsPerRow = 5, subImgSize=(150,150)):
 
 
 ### Diversity analysis
-def divan(smidf, summ = False):
+def divan(smidf, summ = False, OnlyBu = False, arena = None):
     
     start = time.time()
     
     # Cluster by butina and cl
-    clr_bu = clusmidf(smidf)
-    clr_cl = clusmidf(smidf, method = 'cl', th = 0.55)
+    clr_bu = clusmidf(smidf, arena = arena)
+    if(not OnlyBu):
+        clr_cl = clusmidf(smidf, method = 'cl', th = 0.55, arena = arena)
     
     # Count the number of cluster in each method
     ncl_bu = len(clr_bu)
-    ncl_cl = len(clr_cl)
+    if(not OnlyBu):
+        ncl_cl = len(clr_cl)
     
     # Count Murko frameworks
     fras = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidf.smiles]
@@ -249,9 +254,15 @@ def divan(smidf, summ = False):
     print('Diversity analysis time: ' + time.strftime("%H:%M:%S", time.gmtime(eltime)))
     
     if(summ):
-    	return ncl_bu, ncl_cl, nfra, nfrag
+        if(OnlyBu):
+            return ncl_bu, nfra, nfrag
+	else:
+    	    return ncl_bu, ncl_cl, nfra, nfrag
     else:
-	return clr_bu, clr_cl, fras, frasg
+        if(OnlyBu):
+            return clr_bu, fras, frasg
+	else:
+	    return clr_bu, clr_cl, fras, frasg
 
 
 
