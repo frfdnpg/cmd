@@ -8,7 +8,7 @@ from rdkit import Chem
 import numpy as np
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 import scipy.spatial.distance as ssd
-import matplotlib
+import matplotlib.pyplot as plt
 import pylab
 import random
 from rdkit.Chem import Draw
@@ -242,12 +242,12 @@ def divan(smidf, summ = False, OnlyBu = False, arena = None):
         ncl_cl = len(clr_cl)
     
     # Count Murko frameworks
-    fras = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidf.smiles]
-    nfra = len(np.unique(fras))
+    fras = list(set([Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidf.smiles]))
+    nfra = len(fras)
     
     # Count generic Murko frameworks
-    frasg = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidf.smiles]
-    nfrag = len(np.unique(frasg))
+    frasg = list(set([Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidf.smiles]))
+    nfrag = len(frasg)
     
     end = time.time()
     eltime = end - start
@@ -286,7 +286,7 @@ def novan(smidfq, smidft, th = 0.7):
     news = []
     for query_id, query_hits in zip(arq.ids, results):
         if len(query_hits) == 0:
-            new.append(query_id)
+            news.append(query_id)
     
     
     # Generate list of frameworks for query and target
@@ -295,7 +295,7 @@ def novan(smidfq, smidft, th = 0.7):
     frat = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidft.smiles]
     frat = list(np.unique(frat))
     
-    newfrags = [f for f in fraq if f not in frat]
+    newfraqs = [f for f in fraq if f not in frat]
     
     # Generate list of generic frameworks for query and target
     gfraq = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidfq.smiles]
@@ -303,11 +303,26 @@ def novan(smidfq, smidft, th = 0.7):
     gfrat = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidft.smiles]
     gfrat = list(np.unique(gfrat))
     
-    newgfrags = [f for f in gfraq if f not in gfrat]
+    newgfraqs = [f for f in gfraq if f not in gfrat]
     
     
     end = time.time()
     eltime = end - start
     print('Novelty analysis time: ' + time.strftime("%H:%M:%S", time.gmtime(eltime)))
     
-    return new, len(new), fraq, newfrags, gfraq, newgfrags
+    return news, fraq, newfraqs, gfraq, newgfraqs
+
+
+### Plot clusters
+def plotclus(d, xlab, ylab, xloglab, yloglab):
+
+    ax1 = plt.axes()  # standard axes
+    ax2 = plt.axes([0.45, 0.45, 0.4, 0.4])
+    ax1.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
+    ax1.set_xlabel(xlab)
+    ax1.set_ylabel(ylab)
+    ax2.set_xscale("log")
+    ax2.set_yscale("log")
+    ax2.set_xlabel(xloglab)
+    ax2.set_ylabel(yloglab)
+    ax2.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
