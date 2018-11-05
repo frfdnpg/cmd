@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import sys
+sys.path.insert(0, '../')
 import numpy as np
 import pandas as pds
 from preprocessing import smiles_to_seq, vectorize
@@ -110,11 +112,11 @@ for n in range(50000,300001,50000):
         
         ## unconditional generation
         smis_u = []
-        for t in range(5000):
+        for t in range(10000):
             smi = model.sampling_unconditional()
             smis_u.append(smi)
           
-        csvfile = "./unc"+str(n)+".csv"
+        csvfile = "./unc2-"+str(n)+".csv"
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_u:
@@ -127,11 +129,11 @@ for n in range(50000,300001,50000):
         ytarget = 250.
         ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
     
-        for t in range(5000):
+        for t in range(10000):
             smi = model.sampling_conditional(yid, ytarget_transform)
             smis_c.append(smi)
     
-        csvfile = "./con"+str(n)+".csv"
+        csvfile = "./con2-"+str(n)+".csv"
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_c:
