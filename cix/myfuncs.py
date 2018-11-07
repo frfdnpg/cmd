@@ -14,6 +14,8 @@ import random
 from rdkit.Chem import Draw
 from rdkit.Chem.Scaffolds import MurckoScaffold as ms
 from rdkit.Chem.Draw import IPythonConsole
+from rdkit.Chem import PandasTools as pt
+from rdkit.Chem import Descriptors
 
 
 ### The results of the Taylor-Butina clustering
@@ -120,19 +122,22 @@ def smis2smidf(smis):
 
 
 ### Create a dataframe of smiles, id from smiles file
-def smisf2smidf(smisf, noid = True):
+def smisf2smidf(smisf, noid = True, random = False):
     
     if noid:
         smidf = pd.read_csv(smisf, delim_whitespace = True, names = ['smiles'], header = None)
     else:
         smidf = pd.read_csv(smisf, delim_whitespace = True, names = ['smiles','id'], header = None)
-    
+	
+    if random == True:
+	smidf = smidf.sample(frac=1)
+	
     return smidf
 
 
 
 ### Create arena from smiles df
-def smidf2arena(smidf):
+def smidf2arena(smidf, reorder = True):
     # Write df of smiles, id
     smidf.to_csv('smidf.smi', header = False, sep = ' ', index = False)
     
@@ -141,7 +146,7 @@ def smidf2arena(smidf):
     
     ## Load the FPs into an arena
     try:
-        arena = chemfp.load_fingerprints('./smidf.fps')
+        arena = chemfp.load_fingerprints('./smidf.fps', reorder = reorder)
     except IOError as err:
         sys.stderr.write("Cannot open fingerprint file: %s" % (err,))
         raise SystemExit(2)
@@ -151,6 +156,25 @@ def smidf2arena(smidf):
     
     # Return arena
     return arena
+
+
+
+### Create an fps file from a smiles df
+def smidf2fps(smidf, name):
+    # Write df of smiles, id
+    smidf.to_csv('smidf.smi', header = False, sep = ' ', index = False)
+
+    # Generate fps file
+    sp.call(['rdkit2fps', './smidf.smi', '-o', name + ".fps"])	
+
+    # Remove files
+    sp.call(['rm', './smidf.smi'])
+
+
+
+### Remove fps
+def remfps(name):
+    sp.call(['rm', './' + name + '.fps'])
 
 
 
@@ -313,6 +337,7 @@ def novan(smidfq, smidft, th = 0.7):
     return news, fraq, newfraqs, gfraq, newgfraqs
 
 
+
 ### Plot clusters
 def plotclus(d, xlab, ylab, xloglab, yloglab):
 
@@ -326,3 +351,67 @@ def plotclus(d, xlab, ylab, xloglab, yloglab):
     ax2.set_xlabel(xloglab)
     ax2.set_ylabel(yloglab)
     ax2.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
+
+
+
+### Paint property histogram
+def painthis(smidf, prop):
+
+    pt.AddMoleculeColumnToFrame(smidf,"smiles")
+    smidf['pr'] = smidf['ROMol'].map('Descriptors.' + prop)
+    del smidf["ROMol"]
+    ax = smidf['pr'].hist(bins = 50)
+    ax.set_xlabel(prop)
+
+
+
+### Whole diversity and novelty analysis for iterations
+def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
+
+    df = pd.DataFrame(np.nan, index = range(1, nit+1),\
+                      columns =\
+                     ["# train","%corr inp","# clus inp","# fram inp","# gen fram inp",\
+                     "# out","%corr out","# clus out","# fram out","# gen fram out",\
+                     "% new str","% new fram","% new gen fram"])
+    
+    cls = [] # List with lists of clusters
+    
+    for i in range(len(it)):
+    
+        # Find corrects in input and fill ntrain and pcorr inp
+        smis = mf.smif2smis('./' + name_train + str(it[i]) + '.smi')
+        ncorr, n, smis, wrongsmis = mf.corrsmis(smis)
+        smidft = mf.smis2smidf(smis)
+        del smis
+        df["# train"].iloc[i] = n
+        df["%corr inp"].iloc[i] = round(ncorr/float(n)*100,2)
+    
+        # Find corrects in output 
+        smis = mf.smif2smis('./' + name_pref +str(it[i]) + '.smi')
+        ncorr, n, smis, wrongsmis = mf.corrsmis(smis)
+        smidfu = mf.smis2smidf(smis)
+        del smis
+        df["# out"].iloc[i] = n
+        df["%corr out"].iloc[i] = round(ncorr/float(n)*100,2)
+    
+        # Diversity analysis of input and fill nclus inp, nfram inp, ngenfram inp
+        clb, fs, fg = mf.divan(smidft, OnlyBu = True)
+        df["# clus inp"].iloc[i] = len(clb)
+        df["# fram inp"].iloc[i] = len(fs)
+        df["# gen fram inp"].iloc[i] = len(fg)
+        cls.append(clb)
+    
+        # Diversity analysis of output and fill nclus out, nfram out, ngenfram out
+        clb, fs, fg = mf.divan(smidfu, OnlyBu = True)
+        df["# clus out"].iloc[i] = len(clb)
+        df["# fram out"].iloc[i] = len(fs)
+        df["# gen fram out"].iloc[i] = len(fg)
+    
+        # Novelty analysis
+        news, fraq, newfraqs, gfraq, newgfraqs = mf.novan(smidfu, smidft, th = th)
+        df["% new str"].iloc[i] = round(100*len(news)/5000.,2)
+        df["% new fram"].iloc[i] = round(100*len(newfraqs)/float(len(fraq)),2)
+        df["% new gen fram"].iloc[i] = round(100*len(newgfraqs)/float(len(gfraq)),2)
+                            
+    # Return dataframe with output
+    return df, cls
