@@ -14,14 +14,8 @@ import random
 from rdkit.Chem import Draw
 from rdkit.Chem.Scaffolds import MurckoScaffold as ms
 from rdkit.Chem.Draw import IPythonConsole
-<<<<<<< HEAD
-<<<<<<< HEAD
 from rdkit.Chem import PandasTools as pt
 from rdkit.Chem import Descriptors
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
 
 
 ### The results of the Taylor-Butina clustering
@@ -128,46 +122,22 @@ def smis2smidf(smis):
 
 
 ### Create a dataframe of smiles, id from smiles file
-<<<<<<< HEAD
-<<<<<<< HEAD
 def smisf2smidf(smisf, noid = True, random = False):
-=======
-def smisf2smidf(smisf, noid = True):
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
-def smisf2smidf(smisf, noid = True):
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
     
     if noid:
         smidf = pd.read_csv(smisf, delim_whitespace = True, names = ['smiles'], header = None)
     else:
         smidf = pd.read_csv(smisf, delim_whitespace = True, names = ['smiles','id'], header = None)
-<<<<<<< HEAD
-<<<<<<< HEAD
 	
     if random == True:
 	smidf = smidf.sample(frac=1)
-	
-=======
-    
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
-    
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
     return smidf
 
 
 
 ### Create arena from smiles df
-<<<<<<< HEAD
-<<<<<<< HEAD
 def smidf2arena(smidf, reorder = True):
-=======
-def smidf2arena(smidf):
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
-def smidf2arena(smidf):
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
+
     # Write df of smiles, id
     smidf.to_csv('smidf.smi', header = False, sep = ' ', index = False)
     
@@ -176,15 +146,7 @@ def smidf2arena(smidf):
     
     ## Load the FPs into an arena
     try:
-<<<<<<< HEAD
-<<<<<<< HEAD
         arena = chemfp.load_fingerprints('./smidf.fps', reorder = reorder)
-=======
-        arena = chemfp.load_fingerprints('./smidf.fps')
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
-        arena = chemfp.load_fingerprints('./smidf.fps')
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
     except IOError as err:
         sys.stderr.write("Cannot open fingerprint file: %s" % (err,))
         raise SystemExit(2)
@@ -197,8 +159,6 @@ def smidf2arena(smidf):
 
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 ### Create an fps file from a smiles df
 def smidf2fps(smidf, name):
     # Write df of smiles, id
@@ -218,10 +178,6 @@ def remfps(name):
 
 
 
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
 ### Cluster from smiles df
 def clusmidf(smidf, th = 0.8, method = 'butina', arena = None):
     
@@ -381,13 +337,7 @@ def novan(smidfq, smidft, th = 0.7):
     return news, fraq, newfraqs, gfraq, newgfraqs
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
 ### Plot clusters
 def plotclus(d, xlab, ylab, xloglab, yloglab):
 
@@ -401,8 +351,6 @@ def plotclus(d, xlab, ylab, xloglab, yloglab):
     ax2.set_xlabel(xloglab)
     ax2.set_ylabel(yloglab)
     ax2.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 
 
@@ -468,7 +416,3 @@ def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
                             
     # Return dataframe with output
     return df, cls
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
