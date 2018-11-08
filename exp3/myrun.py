@@ -116,7 +116,7 @@ for n in [50000,81661]:
             smi = model.sampling_unconditional()
             smis_u.append(smi)
           
-        csvfile = "unc"+str(n)+".csv"
+        csvfile = "unc"+str(n)+".smi"
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_u:
@@ -133,7 +133,7 @@ for n in [50000,81661]:
             smi = model.sampling_conditional(yid, ytarget_transform)
             smis_c.append(smi)
     
-        csvfile = "con"+str(n)+".csv"
+        csvfile = "con"+str(n)+".smi"
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_c:
