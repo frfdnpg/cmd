@@ -368,6 +368,7 @@ def painthis(smidf, prop):
 ### Whole diversity and novelty analysis for iterations
 def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
 
+    nit = len(it)
     df = pd.DataFrame(np.nan, index = range(1, nit+1),\
                       columns =\
                      ["# train","%corr inp","# clus inp","# fram inp","# gen fram inp",\
@@ -379,36 +380,36 @@ def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
     for i in range(len(it)):
     
         # Find corrects in input and fill ntrain and pcorr inp
-        smis = mf.smif2smis('./' + name_train + str(it[i]) + '.smi')
-        ncorr, n, smis, wrongsmis = mf.corrsmis(smis)
-        smidft = mf.smis2smidf(smis)
+        smis = smif2smis('./' + name_train + str(it[i]) + '.smi')
+        ncorr, n, smis, wrongsmis = corrsmis(smis)
+        smidft = smis2smidf(smis)
         del smis
         df["# train"].iloc[i] = n
         df["%corr inp"].iloc[i] = round(ncorr/float(n)*100,2)
     
         # Find corrects in output 
-        smis = mf.smif2smis('./' + name_pref +str(it[i]) + '.smi')
-        ncorr, n, smis, wrongsmis = mf.corrsmis(smis)
-        smidfu = mf.smis2smidf(smis)
+        smis = smif2smis('./' + name_pref +str(it[i]) + '.smi')
+        ncorr, n, smis, wrongsmis = corrsmis(smis)
+        smidfu = smis2smidf(smis)
         del smis
         df["# out"].iloc[i] = n
         df["%corr out"].iloc[i] = round(ncorr/float(n)*100,2)
     
         # Diversity analysis of input and fill nclus inp, nfram inp, ngenfram inp
-        clb, fs, fg = mf.divan(smidft, OnlyBu = True)
+        clb, fs, fg = divan(smidft, OnlyBu = True)
         df["# clus inp"].iloc[i] = len(clb)
         df["# fram inp"].iloc[i] = len(fs)
         df["# gen fram inp"].iloc[i] = len(fg)
         cls.append(clb)
     
         # Diversity analysis of output and fill nclus out, nfram out, ngenfram out
-        clb, fs, fg = mf.divan(smidfu, OnlyBu = True)
+        clb, fs, fg = divan(smidfu, OnlyBu = True)
         df["# clus out"].iloc[i] = len(clb)
         df["# fram out"].iloc[i] = len(fs)
         df["# gen fram out"].iloc[i] = len(fg)
     
         # Novelty analysis
-        news, fraq, newfraqs, gfraq, newgfraqs = mf.novan(smidfu, smidft, th = th)
+        news, fraq, newfraqs, gfraq, newgfraqs = novan(smidfu, smidft, th = th)
         df["% new str"].iloc[i] = round(100*len(news)/5000.,2)
         df["% new fram"].iloc[i] = round(100*len(newfraqs)/float(len(fraq)),2)
         df["% new gen fram"].iloc[i] = round(100*len(newgfraqs)/float(len(gfraq)),2)
