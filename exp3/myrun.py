@@ -117,7 +117,11 @@ for n in [50000,81661]:
             smis_u.append(smi)
           
 <<<<<<< HEAD
+<<<<<<< HEAD
         csvfile = "unc"+str(n)+".smi"
+=======
+        csvfile = "unc"+str(n)+".csv"
+>>>>>>> db9ccf06957753288e194a50cfee12a95506578c
 =======
         csvfile = "unc"+str(n)+".csv"
 >>>>>>> db9ccf06957753288e194a50cfee12a95506578c
@@ -138,7 +142,11 @@ for n in [50000,81661]:
             smis_c.append(smi)
     
 <<<<<<< HEAD
+<<<<<<< HEAD
         csvfile = "con"+str(n)+".smi"
+=======
+        csvfile = "con"+str(n)+".csv"
+>>>>>>> db9ccf06957753288e194a50cfee12a95506578c
 =======
         csvfile = "con"+str(n)+".csv"
 >>>>>>> db9ccf06957753288e194a50cfee12a95506578c
