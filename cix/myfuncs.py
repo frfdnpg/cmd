@@ -122,7 +122,7 @@ def smis2smidf(smis):
 
 
 ### Create a dataframe of smiles, id from smiles file
-def smisf2smidf(smisf, noid = True, random = False):
+def smisf2smidf(smisf, noid = True, random = False, seed = 1234):
     
     if noid:
         smidf = pd.read_csv(smisf, delim_whitespace = True, names = ['smiles'], header = None)
@@ -130,7 +130,7 @@ def smisf2smidf(smisf, noid = True, random = False):
         smidf = pd.read_csv(smisf, delim_whitespace = True, names = ['smiles','id'], header = None)
 	
     if random == True:
-	smidf = smidf.sample(frac=1)
+	smidf = smidf.sample(frac=1, random_state = seed)
     return smidf
 
 
@@ -354,6 +354,47 @@ def plotclus(d, xlab, ylab, xloglab, yloglab):
 
 
 
+### Plot list of clusters
+def plotmulticlus(cls, sizex, sizey):
+    
+    ncl = len(cls)
+    
+    fig, ax = plt.subplots(ncl, 2, figsize=[sizex, sizey])
+    plt.subplots_adjust(hspace = 0.3, wspace = 0.3)
+    
+    ni = 0
+    for i in range(ncl):
+        cl = cls[i]
+            
+        # Left column: cluster distribution
+        a0 = ax[i][0]
+        d = pd.DataFrame({'clid':range(1, len(cl)+1), 'n':map(len, cl)})
+        a0.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
+        a0.set_xlabel("Cluster ID")
+        a0.set_ylabel("# Elements")
+        ia0 = inset_axes(a0, width=1.3, height=0.9)
+        ia0.set_xscale("log")
+        ia0.set_yscale("log")
+        ia0.set_xlabel("log Cluster ID")
+        ia0.set_ylabel("log #Elements")
+        ia0.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
+            
+        # Right column: neighbor distribution
+        a1 = ax[i][1]
+        d2 = pd.DataFrame({"clsize":d.n.groupby(d.n).unique(), "n":d.n.groupby(d.n).sum()})
+        a1.scatter(d2.iloc[:,0], d2.iloc[:,1], marker = '.', linewidth = 0)
+        a1.set_xlabel("Cluster Size")
+        a1.set_ylabel("# Elements")
+        ia1 = inset_axes(a1, width=1.3, height=0.9)
+        ia1.set_xscale("log")
+        ia1.set_yscale("log")
+        ia1.set_xlabel("log Cluster Size")
+        ia1.set_ylabel("log # Elements")
+        ia1.scatter(d.iloc[:,0], d.iloc[:,1], marker = '.', linewidth = 0)
+    return
+    
+
+
 ### Paint property histogram
 def painthis(smidf, prop):
 
@@ -416,3 +457,38 @@ def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
                             
     # Return dataframe with output
     return df, cls
+
+
+
+### Diversity sampler 0
+def divsamp0(ar, th = 0.7, nlimit = 300000, seed = 1234):
+    start = time.time()
+
+    np.random.seed(seed)
+    rnin = np.arange(len(ar))
+    np.random.shuffle(rnin)
+
+    neig = set()
+    sel = []
+
+    for i in range(len(ar)):
+        if(len(sel) < nlimit):
+            if i == 0:
+                sel.append(rnin[i])
+                fp = ar[i][1]
+                res = chemfp.search.threshold_tanimoto_search_fp(fp, ar, threshold= th)
+                neig.update(res.get_indices())
+            else:
+                if i not in neig:
+                    sel.append(rnin[i])
+                    fp = ar[i][1]
+                    res = chemfp.search.threshold_tanimoto_search_fp(fp, ar, threshold=0.7)
+                    neig.update(res.get_indices())
+            print "i=" + str(i) + "; nsel=" + str(len(sel)) + "; nneig=" + str(len(neig)) + "\r",
+
+    end = time.time()
+    eltime = end - start
+
+    print "i=" + str(i) + "; nsel=" + str(len(sel)) + "; nneig=" + str(len(neig)) + "; Sampling time: " + time.strftime("%H:%M:%S", time.gmtime(eltime))
+    
+    return sel
