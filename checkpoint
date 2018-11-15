@@ -1,2 +1,0 @@
-model_checkpoint_path: "zinc_model1100.ckpt"
-all_model_checkpoint_paths: "zinc_model1100.ckpt"
