@@ -2,3 +2,6 @@
 clle.smi
 cldr.smi
 smidf.smi
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
