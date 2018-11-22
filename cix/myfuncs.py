@@ -16,6 +16,7 @@ from rdkit.Chem.Scaffolds import MurckoScaffold as ms
 from rdkit.Chem.Draw import IPythonConsole
 from rdkit.Chem import PandasTools as pt
 from rdkit.Chem import Descriptors
+from mpl_toolkits.axes_grid.inset_locator import inset_axes
 
 
 ### The results of the Taylor-Butina clustering
@@ -250,6 +251,24 @@ def paintmols(smis, molsPerRow = 5, subImgSize=(150,150)):
 
 
 
+### Generate framework for a SMILES, handling for errors
+def framecheck(s):
+    try:
+        return Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s)))
+    except:
+        pass
+
+
+
+### Generate generic framework for a SMILES, handling for errors
+def gframecheck(s):
+    try:
+        return Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s)))
+    except:
+        pass
+
+
+
 ### Diversity analysis
 def divan(smidf, summ = False, OnlyBu = False, arena = None):
     
@@ -266,11 +285,11 @@ def divan(smidf, summ = False, OnlyBu = False, arena = None):
         ncl_cl = len(clr_cl)
     
     # Count Murko frameworks
-    fras = list(set([Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidf.smiles]))
+    fras = list(set([framecheck(s) for s in smidf.smiles]))
     nfra = len(fras)
     
     # Count generic Murko frameworks
-    frasg = list(set([Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidf.smiles]))
+    frasg = list(set([gframecheck(s) for s in smidf.smiles]))
     nfrag = len(frasg)
     
     end = time.time()
@@ -314,9 +333,9 @@ def novan(smidfq, smidft, th = 0.7):
     
     
     # Generate list of frameworks for query and target
-    fraq = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidfq.smiles]
+    fraq = [framecheck(s) for s in smidfq.smiles]
     fraq = list(np.unique(fraq))
-    frat = [Chem.MolToSmiles(ms.GetScaffoldForMol(Chem.MolFromSmiles(s))) for s in smidft.smiles]
+    frat = [gframecheck(s) for s in smidft.smiles]
     frat = list(np.unique(frat))
     
     newfraqs = [f for f in fraq if f not in frat]
@@ -359,7 +378,7 @@ def plotmulticlus(cls, sizex, sizey):
     
     ncl = len(cls)
     
-    fig, ax = plt.subplots(ncl, 2, figsize=[sizex, sizey])
+    fig, ax = plt.subplots(ncl, 2, figsize=[sizex, sizey], squeeze = False)
     plt.subplots_adjust(hspace = 0.3, wspace = 0.3)
     
     ni = 0
@@ -403,6 +422,30 @@ def painthis(smidf, prop):
     del smidf["ROMol"]
     ax = smidf['pr'].hist(bins = 50)
     ax.set_xlabel(prop)
+
+
+
+### Paint a bunch of histograms
+def paintmultihist(prs, xlab, nrow, ncol, xtxt, ytxt, sizex, sizey, legx, legy, leg):
+    
+    mes = map(np.mean, prs)
+    sds = map(np.std, prs)
+    fig, ax = plt.subplots(nrow, ncol, figsize=[sizex, sizey])
+    plt.subplots_adjust(hspace = 0.3, wspace = 0.3)
+
+    ni = 0
+
+    for row in range(nrow):
+        for col in range(ncol):
+            if ni < len(prs):
+                ax[row][col].hist(prs[ni], bins = 40)
+                ax[row][col].set_xlabel(xlab)
+                ax[row][col].text(xtxt,ytxt, "Mean=" + str(round(mes[ni],2)))
+                ax[row][col].text(xtxt,ytxt-40, "SD=" + str(round(sds[ni],2)))
+                ax[row][col].text(legx, legy, leg[ni])
+                ni = ni+1
+
+    plt.show()
 
 
 
@@ -482,7 +525,7 @@ def divsamp0(ar, th = 0.7, nlimit = 300000, seed = 1234):
                 if i not in neig:
                     sel.append(rnin[i])
                     fp = ar[i][1]
-                    res = chemfp.search.threshold_tanimoto_search_fp(fp, ar, threshold=0.7)
+                    res = chemfp.search.threshold_tanimoto_search_fp(fp, ar, threshold=th)
                     neig.update(res.get_indices())
             print "i=" + str(i) + "; nsel=" + str(len(sel)) + "; nneig=" + str(len(neig)) + "\r",
 

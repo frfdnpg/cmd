@@ -86,7 +86,7 @@ for n in [50000,81661]:
     seqlen_x = X.shape[1]
     dim_x = X.shape[2]
     dim_y = Y.shape[1]
-    dim_z = 100
+    dim_z = 200
     dim_h = 250
 
     n_hidden = 3
@@ -115,16 +115,8 @@ for n in [50000,81661]:
         for t in range(5000):
             smi = model.sampling_unconditional()
             smis_u.append(smi)
-          
-<<<<<<< HEAD
-<<<<<<< HEAD
-        csvfile = "unc"+str(n)+".smi"
-=======
-        csvfile = "unc"+str(n)+".csv"
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
-        csvfile = "unc"+str(n)+".csv"
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
+        csvfile = "unc"+str(n)+"z200.csv"
+
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_u:
@@ -140,16 +132,8 @@ for n in [50000,81661]:
         for t in range(5000):
             smi = model.sampling_conditional(yid, ytarget_transform)
             smis_c.append(smi)
-    
-<<<<<<< HEAD
-<<<<<<< HEAD
-        csvfile = "con"+str(n)+".smi"
-=======
-        csvfile = "con"+str(n)+".csv"
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
-=======
-        csvfile = "con"+str(n)+".csv"
->>>>>>> db9ccf06957753288e194a50cfee12a95506578c
+        csvfile = "con"+str(n)+"z200.csv"
+
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_c:
