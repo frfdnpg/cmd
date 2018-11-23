@@ -24,8 +24,8 @@ start_time = time.time()
 frac=0.5
 beta=10000.
 char_set=[' ','1','2','3','4','5','6','7','8','9','-','#','(',')','[',']','+','=','B','Br','c','C','Cl','F','H','I','N','n','O','o','P','p','S','s','Si','Sn']
-data_uri='./div0cl.csv'
-save_uri='./div0cl.ckpt'
+data_uri='./clusle.csv'
+save_uri='./clusle.ckpt'
 
 ntrn=300000
 frac_val=0.05
