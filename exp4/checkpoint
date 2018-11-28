@@ -1,2 +1,2 @@
-model_checkpoint_path: "div0le.ckpt"
-all_model_checkpoint_paths: "div0le.ckpt"
+model_checkpoint_path: "clusle.ckpt"
+all_model_checkpoint_paths: "clusle.ckpt"

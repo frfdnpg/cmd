@@ -430,7 +430,7 @@ def paintmultihist(prs, xlab, nrow, ncol, xtxt, ytxt, sizex, sizey, legx, legy, 
     
     mes = map(np.mean, prs)
     sds = map(np.std, prs)
-    fig, ax = plt.subplots(nrow, ncol, figsize=[sizex, sizey])
+    fig, ax = plt.subplots(nrow, ncol, figsize=[sizex, sizey], squeeze = False)
     plt.subplots_adjust(hspace = 0.3, wspace = 0.3)
 
     ni = 0
