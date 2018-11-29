@@ -5,3 +5,4 @@ smidf.smi
 .ipynb_checkpoints/
 __pycache__/
 *.pyc
+exp4/smidfdr.smi
