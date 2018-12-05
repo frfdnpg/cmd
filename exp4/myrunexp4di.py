@@ -46,7 +46,7 @@ tstXs=Xs[-ntst:]
 tstY=Y[-ntst:]
 
 
-for n in range(300000,300001):
+for n in range(50000,300001,50000):
     ntrn = n
 
     csvfile = "./train"+str(n)+"div0le.csv"

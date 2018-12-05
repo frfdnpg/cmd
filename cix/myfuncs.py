@@ -310,13 +310,15 @@ def divan(smidf, summ = False, OnlyBu = False, arena = None):
 
 
 ### Novelty analysis
-def novan(smidfq, smidft, th = 0.7):
+def novan(smidfq, smidft, th = 0.7, arq = None, art = None):
     
     start = time.time()
     
     # Get the arenas
-    arq = smidf2arena(smidfq)
-    art = smidf2arena(smidft)
+    if arq is None:
+        arq = smidf2arena(smidfq)
+    if arq is None:
+        art = smidf2arena(smidft)
     
     end = time.time()
     eltime = end - start
@@ -335,19 +337,18 @@ def novan(smidfq, smidft, th = 0.7):
     # Generate list of frameworks for query and target
     fraq = [framecheck(s) for s in smidfq.smiles]
     fraq = list(np.unique(fraq))
-    frat = [gframecheck(s) for s in smidft.smiles]
+    frat = [framecheck(s) for s in smidft.smiles]
     frat = list(np.unique(frat))
     
     newfraqs = [f for f in fraq if f not in frat]
     
     # Generate list of generic frameworks for query and target
-    gfraq = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidfq.smiles]
+    gfraq = [gframecheck(s) for s in smidfq.smiles]
     gfraq = list(np.unique(gfraq))
-    gfrat = [Chem.MolToSmiles(ms.MakeScaffoldGeneric(Chem.MolFromSmiles(s))) for s in smidft.smiles]
+    gfrat = [gframecheck(s) for s in smidft.smiles]
     gfrat = list(np.unique(gfrat))
     
     newgfraqs = [f for f in gfraq if f not in gfrat]
-    
     
     end = time.time()
     eltime = end - start
@@ -474,33 +475,36 @@ def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
         # Find corrects in output 
         smis = smif2smis('./' + name_pref +str(it[i]) + '.smi')
         ncorr, n, smis, wrongsmis = corrsmis(smis)
-        smidfu = smis2smidf(smis)
+        smidfq = smis2smidf(smis)
         del smis
         df["# out"].iloc[i] = n
         df["%corr out"].iloc[i] = round(ncorr/float(n)*100,2)
+        
+        # Generate arenas
+        art = smidf2arena(smidft)
+        arq = smidf2arena(smidfq)
     
         # Diversity analysis of input and fill nclus inp, nfram inp, ngenfram inp
-        clb, fs, fg = divan(smidft, OnlyBu = True)
+        clb, fs, fg = divan(smidft, OnlyBu = True, arena = art)
         df["# clus inp"].iloc[i] = len(clb)
         df["# fram inp"].iloc[i] = len(fs)
         df["# gen fram inp"].iloc[i] = len(fg)
         cls.append(clb)
     
         # Diversity analysis of output and fill nclus out, nfram out, ngenfram out
-        clb, fs, fg = divan(smidfu, OnlyBu = True)
+        clb, fs, fg = divan(smidfq, OnlyBu = True, arena = arq)
         df["# clus out"].iloc[i] = len(clb)
         df["# fram out"].iloc[i] = len(fs)
         df["# gen fram out"].iloc[i] = len(fg)
     
         # Novelty analysis
-        news, fraq, newfraqs, gfraq, newgfraqs = novan(smidfu, smidft, th = th)
-        df["% new str"].iloc[i] = round(100*len(news)/5000.,2)
+        news, fraq, newfraqs, gfraq, newgfraqs = novan(smidfq, smidft, th = th, arq = arq, art = art)
+        df["% new str"].iloc[i] = round(100*len(news)/float(smidfq.shape[0]),2)
         df["% new fram"].iloc[i] = round(100*len(newfraqs)/float(len(fraq)),2)
         df["% new gen fram"].iloc[i] = round(100*len(newgfraqs)/float(len(gfraq)),2)
                             
     # Return dataframe with output
     return df, cls
-
 
 
 ### Diversity sampler 0
@@ -518,13 +522,13 @@ def divsamp0(ar, th = 0.7, nlimit = 300000, seed = 1234):
         if(len(sel) < nlimit):
             if i == 0:
                 sel.append(rnin[i])
-                fp = ar[i][1]
+                fp = ar[rnin[i]][1]
                 res = chemfp.search.threshold_tanimoto_search_fp(fp, ar, threshold= th)
                 neig.update(res.get_indices())
             else:
-                if i not in neig:
+                if rnin[i] not in neig:
                     sel.append(rnin[i])
-                    fp = ar[i][1]
+                    fp = ar[rnin[i]][1]
                     res = chemfp.search.threshold_tanimoto_search_fp(fp, ar, threshold=th)
                     neig.update(res.get_indices())
             print "i=" + str(i) + "; nsel=" + str(len(sel)) + "; nneig=" + str(len(neig)) + "\r",
@@ -532,6 +536,8 @@ def divsamp0(ar, th = 0.7, nlimit = 300000, seed = 1234):
     end = time.time()
     eltime = end - start
 
-    print "i=" + str(i) + "; nsel=" + str(len(sel)) + "; nneig=" + str(len(neig)) + "; Sampling time: " + time.strftime("%H:%M:%S", time.gmtime(eltime))
+    print "i=" + str(i) + "; nsel=" + str(len(sel)) + "; nneig=" + str(len(neig)) + "; Sampling time: " + time.strftime("%H:%M:%S", time.gmtime
+(eltime))
     
     return sel
+
