@@ -7,6 +7,7 @@ import subprocess as sp
 from rdkit import Chem
 import numpy as np
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from scipy.stats import kde
 import scipy.spatial.distance as ssd
 import matplotlib.pyplot as plt
 import pylab
@@ -541,3 +542,26 @@ def divsamp0(ar, th = 0.7, nlimit = 300000, seed = 1234):
     
     return sel
 
+
+
+# Paint a bidimensional scatter/contour-density plot
+def bidiplot(data, xlab, ylab, alpha = 1, s = 2, nbins = 20, d = False):
+
+    if d is False:
+        ax = plt.axes()  
+        ax.scatter(data[:,0],data[:,1], alpha = alpha, s = 2)
+        ax.set_xlabel(xlab)
+        ax.set_ylabel(ylab)
+    else:
+        ax = plt.axes() 
+        ax.set_xlabel(xlab)
+        ax.set_ylabel(ylab)
+        x, y = data.T
+        nbins = 20
+        k = kde.gaussian_kde(data.T)
+        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+        zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap=plt.cm.afmhot_r)
+        plt.contour(xi, yi, zi.reshape(xi.shape))
+        plt.colorbar()
+        plt.show()
