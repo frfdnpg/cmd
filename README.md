@@ -9,6 +9,7 @@ Modified by Gonzalo Colmenarejo
 
 - **run.py** : main script
 - **SSVAE.py** - model architecture
+- **mySSVAE.py** - modification of the previous to deal with multiparameter conditioning
 - **preprocessing.py** - functions for preprocessing
 - **exp0** : default run of CMD with original dataset and analysis of diversity, correctness and novelty of output
 - **exp1** : analysis of output (cor, div, nov) after training the CMD with increasing subsets of original training dataset
