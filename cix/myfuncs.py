@@ -457,29 +457,35 @@ def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
     nit = len(it)
     df = pd.DataFrame(np.nan, index = range(1, nit+1),\
                       columns =\
-                     ["# train","%corr inp","# clus inp","# fram inp","# gen fram inp",\
-                     "# out","%corr out","# clus out","# fram out","# gen fram out",\
+                     ["# train","%corr inp","# un train","# clus inp","# fram inp","# gen fram inp",\
+                     "# out","%corr out","# un out","# clus out","# fram out","# gen fram out",\
                      "% new str","% new fram","% new gen fram"])
     
     cls = [] # List with lists of clusters
     
     for i in range(len(it)):
     
-        # Find corrects in input and fill ntrain and pcorr inp
+        # Find corrects and unique in input and fill ntrain, nuntrain and pcorr inp
         smis = smif2smis('./' + name_train + str(it[i]) + '.smi')
         ncorr, n, smis, wrongsmis = corrsmis(smis)
+        smis = list(set(smis))
+        nuntrain = len(smis)
         smidft = smis2smidf(smis)
         del smis
         df["# train"].iloc[i] = n
         df["%corr inp"].iloc[i] = round(ncorr/float(n)*100,2)
+        df["# un train"].iloc[i] = nuntrain
     
-        # Find corrects in output 
+        # Find corrects and unique in output 
         smis = smif2smis('./' + name_pref +str(it[i]) + '.smi')
         ncorr, n, smis, wrongsmis = corrsmis(smis)
+        smis = list(set(smis))
+        nunout = len(smis)
         smidfq = smis2smidf(smis)
         del smis
         df["# out"].iloc[i] = n
         df["%corr out"].iloc[i] = round(ncorr/float(n)*100,2)
+        df["# un out"].iloc[i] = nunout
         
         # Generate arenas
         art = smidf2arena(smidft)

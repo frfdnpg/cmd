@@ -131,7 +131,7 @@ for n in range(50000,50001):
         ## conditional generation (e.g. MolWt=250)
         smis_c = []
         yid = [0,1]
-        ytarget = [250.,2.]
+        ytarget = [250.,1.]
         ytarget_transform = []
         for i in range(2):
             ytarget_transform.append((ytarget[i]-scaler_Y.mean_[yid[i]])/np.sqrt(scaler_Y.var_[yid[i]]))
