@@ -21,4 +21,6 @@ exp4/div0le.ckpt.index
 exp4/div0le.ckpt.meta
 exp5/Untitled1.ipynb
 exp1/*.db
+exp5/*ckpt*
+exp6/*ckpt*
 
