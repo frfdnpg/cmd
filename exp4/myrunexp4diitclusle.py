@@ -46,7 +46,8 @@ tstXs=Xs[-ntst:]
 tstY=Y[-ntst:]
 
 
-for n in range(100000,300001,100000):
+#for n in range(100000,300001,100000):
+for n in range(300000,300001):
     ntrn = n
 
     csvfile = "./clusle-train-"+str(n)+".smi"
