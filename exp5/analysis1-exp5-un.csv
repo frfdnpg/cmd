@@ -1,0 +1,2 @@
+,# train,%corr inp,# un train,# clus inp,# fram inp,# gen fram inp,# out,%corr out,# un out,# clus out,# fram out,# gen fram out,% new str,% new fram,% new gen fram
+1,300000.0,100.0,296753.0,198382.0,147006.0,255569.0,10000.0,99.35,9527.0,7552.0,5645.0,9008.0,13.81,48.38,67.95

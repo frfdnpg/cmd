@@ -23,8 +23,8 @@ start_time = time.time()
 frac=0.5
 beta=10000.
 char_set=[' ','1','2','3','4','5','6','7','8','9','-','#','(',')','[',']','+','=','B','Br','c','C','Cl','F','H','I','N','n','O','o','P','p','S','s','Si','Sn']
-data_uri='./exp6set.csv'
-save_uri='./exp6.ckpt'
+data_uri='./exp5set.csv'
+save_uri='./exp5.ckpt'
 
 ntrn=300000
 frac_val=0.05
@@ -49,7 +49,7 @@ tstY=Y[-ntst:]
 for n in range(300000,300001):
     ntrn = n
 
-    csvfile = "./train-"+str(n)+".smi"
+    csvfile = "./train"+str(n)+".csv"
     np.savetxt(csvfile, smiles[:n], fmt = '%s')
 
     X=X[:ntrn]
@@ -117,21 +117,21 @@ for n in range(300000,300001):
         
         ## unconditional generation
         #smis_u = []
-        #for t in range(5000):
+        #for t in range(10000):
         #    smi = model.sampling_unconditional()
         #    smis_u.append(smi)
           
-        #csvfile = "./unc2-"+str(n)+".smi"
+        #csvfile = "./unc2-"+str(n)+".csv"
         #with open(csvfile, "w") as output:
         #    writer = csv.writer(output, lineterminator='\n')
         #    for val in smis_u:
         #        writer.writerow([val])
         #output.close()
      
-        ## conditional generation (e.g. logp=0.5, similarity = 1)
+        ## conditional generation (e.g. TPSA=100, MR = 80)
         smis_c = []
         yid = [0,1]
-        ytarget = [-1,1.]
+        ytarget = [100.,60.]
         ytarget_transform = []
         for i in range(2):
             ytarget_transform.append((ytarget[i]-scaler_Y.mean_[yid[i]])/np.sqrt(scaler_Y.var_[yid[i]]))
@@ -140,7 +140,7 @@ for n in range(300000,300001):
             smi = model.mysampling_conditional(yid, ytarget_transform)
             smis_c.append(smi)
     
-        csvfile = "./con2b-"+str(n)+".smi"
+        csvfile = "./con3-"+str(n)+".csv"
         with open(csvfile, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in smis_c:
