@@ -49,7 +49,7 @@ tstY=Y[-ntst:]
 for n in range(300000,300001):
     ntrn = n
 
-    csvfile = "./train-"+str(n)+".smi"
+    csvfile = "./trainb-"+str(n)+".smi"
     np.savetxt(csvfile, smiles[:n], fmt = '%s')
 
     X=X[:ntrn]
