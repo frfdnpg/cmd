@@ -514,6 +514,74 @@ def wholean(it, name_train = "train", name_pref = "unc", th = 0.7):
     return df, cls
 
 
+### Whole diversity and novelty analysis for iterations, returning in the output also the clusters of the outputs
+def wholean2(it, name_train = "train", name_pref = "unc", th = 0.7):
+
+    nit = len(it)
+    df = pd.DataFrame(np.nan, index = range(1, nit+1),\
+                      columns =\
+                     ["# train","%corr inp","# un train","# clus inp","# fram inp","# gen fram inp",\
+                     "# out","%corr out","# un out","# clus out","# fram out","# gen fram out",\
+                     "% new str","% new fram","% new gen fram"])
+    
+    clsi = [] # List with lists of clusters input
+    clso = [] # List with lists of clusters output
+
+    
+    for i in range(len(it)):
+    
+        # Find corrects and unique in input and fill ntrain, nuntrain and pcorr inp
+        smis = smif2smis('./' + name_train + str(it[i]) + '.smi')
+        ncorr, n, smis, wrongsmis = corrsmis(smis)
+        smis = list(set(smis))
+        nuntrain = len(smis)
+        smidft = smis2smidf(smis)
+        del smis
+        df["# train"].iloc[i] = n
+        df["%corr inp"].iloc[i] = round(ncorr/float(n)*100,2)
+        df["# un train"].iloc[i] = nuntrain
+    
+        # Find corrects and unique in output 
+        smis = smif2smis('./' + name_pref +str(it[i]) + '.smi')
+        ncorr, n, smis, wrongsmis = corrsmis(smis)
+        smis = list(set(smis))
+        nunout = len(smis)
+        smidfq = smis2smidf(smis)
+        del smis
+        df["# out"].iloc[i] = n
+        df["%corr out"].iloc[i] = round(ncorr/float(n)*100,2)
+        df["# un out"].iloc[i] = nunout
+        
+        # Generate arenas
+        art = smidf2arena(smidft)
+        arq = smidf2arena(smidfq)
+    
+        # Diversity analysis of input and fill nclus inp, nfram inp, ngenfram inp
+        clb, fs, fg = divan(smidft, OnlyBu = True, arena = art)
+        df["# clus inp"].iloc[i] = len(clb)
+        df["# fram inp"].iloc[i] = len(fs)
+        df["# gen fram inp"].iloc[i] = len(fg)
+        clsi.append(clb)
+    
+        # Diversity analysis of output and fill nclus out, nfram out, ngenfram out
+        clb, fs, fg = divan(smidfq, OnlyBu = True, arena = arq)
+        df["# clus out"].iloc[i] = len(clb)
+        df["# fram out"].iloc[i] = len(fs)
+        df["# gen fram out"].iloc[i] = len(fg)
+        clso.append(clb)
+    
+        # Novelty analysis
+        news, fraq, newfraqs, gfraq, newgfraqs = novan(smidfq, smidft, th = th, arq = arq, art = art)
+        df["% new str"].iloc[i] = round(100*len(news)/float(smidfq.shape[0]),2)
+        df["% new fram"].iloc[i] = round(100*len(newfraqs)/float(len(fraq)),2)
+        df["% new gen fram"].iloc[i] = round(100*len(newgfraqs)/float(len(gfraq)),2)
+                            
+    # Return dataframe with output
+    return df, clsi, clso
+
+
+
+
 ### Diversity sampler 0
 def divsamp0(ar, th = 0.7, nlimit = 300000, seed = 1234):
     start = time.time()
