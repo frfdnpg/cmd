@@ -118,8 +118,9 @@ for n in range(50000,150001,50000):
         smis_u = []
         #for t in [5000,10000,50000,100000,150000,200000,300000]:
         for t in [5000,50000,150000,300000]:
-            smi = model.sampling_unconditional()
-            smis_u.append(smi)
+            for m in range(t):
+                smi = model.sampling_unconditional()
+                smis_u.append(smi)
             
             csvfile = "./unc" + str(n) + "-" + str(t) + ".csv"
             with open(csvfile, "w") as output:
@@ -136,10 +137,11 @@ for n in range(50000,150001,50000):
     
         #for t in [5000,10000,50000,100000,150000,200000,300000]:
         for t in [5000,50000,150000,300000]:
-            smi = model.sampling_conditional(yid, ytarget_transform)
-            smis_c.append(smi)
+            for m in range(t):
+                smi = model.sampling_conditional(yid, ytarget_transform)
+                smis_c.append(smi)
     
-            csvfile = "./cor" + str(n) + "-" + str(t) + ".csv"
+            csvfile = "./con" + str(n) + "-" + str(t) + ".csv"
             with open(csvfile, "w") as output:
                 writer = csv.writer(output, lineterminator='\n')
                 for val in smis_c:
